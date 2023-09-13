@@ -77,6 +77,11 @@ jobs:
       #     fi
       #     which ninja
 
+      - name: Apply Patch
+        run: |
+          sed -i "s@-Werror@#-Werror@g" ./Dependencies/tint/CMakeLists.txt
+          git diff
+
       - name: Compile
         run: |
           export EMSCRIPTEN=${EMSDK}/upstream/emscripten

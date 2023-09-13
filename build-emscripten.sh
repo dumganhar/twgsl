@@ -26,7 +26,7 @@ echo "current dir: ${current_dir}"
 mkdir -p build
 cd build
 emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
-emmake make twgsl -j${core_count}
+emmake make twgsl -j${core_count} #VERBOSE=1 
 
 cd ..
 rm -rf artifact
