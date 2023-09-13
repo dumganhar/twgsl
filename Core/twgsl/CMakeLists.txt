@@ -1,7 +1,10 @@
 set(SOURCES 
     "Source/main.cpp")
 
-add_executable(twgsl ${SOURCES})
+# add_executable(twgsl ${SOURCES})
+
+add_library(twgsl STATIC ${SOURCES})
+
 target_compile_options(twgsl PRIVATE -Oz)
 target_compile_options(twgsl PUBLIC "SHELL:-s ALLOW_MEMORY_GROWTH=1")
 target_link_libraries(twgsl PRIVATE libtint)

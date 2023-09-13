@@ -1,2 +1,3 @@
-artifact
-build
+artifact/
+build/
+build-*/
