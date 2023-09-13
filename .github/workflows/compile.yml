@@ -80,6 +80,7 @@ jobs:
       - name: Apply Patch
         run: |
           sed -i "s@-Werror@#-Werror@g" ./Dependencies/tint/CMakeLists.txt
+          cd ./Dependencies/tint
           git diff
 
       - name: Compile
