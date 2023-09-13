@@ -46,10 +46,12 @@ jobs:
       - name: Print env
         run: |
           echo "${{ env.DEPOT_TOOLS_PATH }}"
+          ls -l ${{ env.DEPOT_TOOLS_PATH }}
 
       - name: gclient sync
         run: |
           export PATH=${{ env.DEPOT_TOOLS_PATH }}:$PATH
+          echo "gclient bin path: $(which gclient)"
           cd ./Dependencies/tint
           cp standalone.gclient .gclient
           gclient sync
