@@ -34,6 +34,26 @@ jobs:
              git submodule update --remote --merge
              git submodule update --progress --init --recursive --force --remote -- "Dependencies/tint"
 
+      - name: Clone DepotTools
+        run: |
+            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+            PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+            cd ..
+            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+            echo "DEPOT_TOOLS_PATH=${PARENT_DIR}/depot_tools" >> $GITHUB_ENV
+            echo "DEPOT_TOOLS_PATH=${PARENT_DIR}/depot_tools"
+
+      - name: Print env
+        run: |
+          echo "${{ env.DEPOT_TOOLS_PATH }}"
+
+      - name: gclient sync
+        run: |
+          export PATH=${{ env.DEPOT_TOOLS_PATH }}:$PATH
+          cd ./Dependencies/Tint
+          cp standalone.gclient .gclient
+          gclient sync
+
       - name: Setup emsdk
         uses: dumganhar/setup-emsdk@997d2cde2deabda085a11f98e86e842915b0e846
         with:
@@ -57,26 +77,6 @@ jobs:
       #         echo "Ninja is already installed."
       #     fi
       #     which ninja
-
-      - name: Clone DepotTools
-        run: |
-            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-            PARENT_DIR="$(dirname "$SCRIPT_DIR")"
-            cd ..
-            git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-            echo "DEPOT_TOOLS_PATH=${PARENT_DIR}/depot_tools" >> $GITHUB_ENV
-            echo "DEPOT_TOOLS_PATH=${PARENT_DIR}/depot_tools"
-
-      - name: Print env
-        run: |
-          echo "${{ env.DEPOT_TOOLS_PATH }}"
-
-      - name: gclient sync
-        run: |
-          export PATH=${{ env.DEPOT_TOOLS_PATH }}:$PATH
-          cd ./twgsl/Dependencies/Tint
-          cp standalone.gclient .gclient
-          gclient sync
 
       - name: Compile
         run: |
