@@ -20,20 +20,19 @@ start_time=$(get_current_time_in_seconds)
 core_count=$(nproc)
 echo "CPU core count：$core_count"
 
-cd ../depot_tools
-export PATH=$(pwd):$PATH
-cd ../twgsl/Dependencies/Tint
-cp standalone.gclient .gclient
-gclient sync
-cd ../../..
-mkdir twgsl_build
-cd twgsl_build
-emcmake cmake ../twgsl
-emmake make twgsl
-mkdir ../twgsl/artifact
-cp ./Core/twgsl/twgsl.js ../twgsl/artifact/twgsl.js
-cp ./Core/twgsl/twgsl.wasm ../twgsl/artifact/twgsl.wasm
+current_dir=$(pwd)
+echo "current dir: ${current_dir}"
 
+mkdir -p build
+cd build
+emcmake cmake ..
+emmake make twgsl -j${core_count}
+
+cd ..
+rm -rf artifact
+mkdir artifact
+cp ./build/Core/twgsl/twgsl.js ./artifact/twgsl.js
+cp ./build/Core/twgsl/twgsl.wasm ./artifact/twgsl.wasm
 
 end_time=$(get_current_time_in_seconds)
 
