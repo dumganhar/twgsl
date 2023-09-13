@@ -1,0 +1,100 @@
+name: Compile Emscripten Library
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  release:
+    types: [published]
+
+# github.head_ref is only defined on pull_request events
+concurrency:
+  group: ${{ github.workflow }}-${{ github.actor }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    if:
+      (! contains(github.event.pull_request.body, '[X] does not change any runtime related code or build configuration'))
+    name: "Emscripten"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update submodule
+        run: |
+             git submodule update --init --recursive
+             git submodule update --remote --merge
+             git submodule update --progress --init --recursive --force --remote -- "Dependencies/tint"
+
+      - name: Setup emsdk
+        uses: dumganhar/setup-emsdk@997d2cde2deabda085a11f98e86e842915b0e846
+        with:
+          version: 3.1.41
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Verify
+        run: |
+          which emcc
+          emcc -v
+          which emcmake
+          which emmake
+
+      # - name: Install ninja
+      #   run: |
+      #     if ! command -v ninja &> /dev/null; then
+      #         echo "Ninja not found, installing..."
+      #         # sudo apt update
+      #         sudo apt install ninja-build
+      #     else
+      #         echo "Ninja is already installed."
+      #     fi
+      #     which ninja
+
+      - name: Clone DepotTools
+        run: |
+             cd ..
+             git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
+      - name: Compile
+        run: |
+          export EMSCRIPTEN=${EMSDK}/upstream/emscripten
+          ./build-emscripten.sh
+          echo "============== Compile Successfully! =============="
+
+      - name: Upload Artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v3
+        with: 
+          name: twgsl
+          path: artifact
+
+      - name: Pack dist files
+        if: github.event_name == 'release'
+        uses: thedoctor0/zip-release@a24011d8d445e4da5935a7e73c1f98e22a439464
+        with:
+          type: 'zip'
+          directory: 'artifact'
+          path: '.'
+          filename: 'twgsl.zip'
+
+      - name: Show Files in artifact directory
+        if: github.event_name == 'release'
+        run: |
+          ls -l artifact
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        uses: svenstaro/upload-release-action@1beeb572c19a9242f4361f4cee78f8e0d9aec5df
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: artifact/twgsl.zip
+          asset_name: twgsl.zip
+          tag: ${{ github.ref }}
