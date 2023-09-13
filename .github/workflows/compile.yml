@@ -36,12 +36,11 @@ jobs:
 
       - name: Clone DepotTools
         run: |
-            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-            PARENT_DIR="$(dirname "$SCRIPT_DIR")"
             cd ..
+            DEPOT_TOOLS_PATH=$(pwd)/depot_tools
             git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-            echo "DEPOT_TOOLS_PATH=${PARENT_DIR}/depot_tools" >> $GITHUB_ENV
-            echo "DEPOT_TOOLS_PATH=${PARENT_DIR}/depot_tools"
+            echo "DEPOT_TOOLS_PATH=$DEPOT_TOOLS_PATH" >> $GITHUB_ENV
+            echo "DEPOT_TOOLS_PATH=$DEPOT_TOOLS_PATH"
 
       - name: Print env
         run: |
