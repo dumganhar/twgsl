@@ -33,12 +33,12 @@ function build() {
         CMAKE_BUILD_TYPE="Debug"
     fi
 
-    # rm -rf ${BUILD_OUT}
-    # mkdir -p ${BUILD_OUT}
-    # cd ${BUILD_OUT}
-    # emcmake cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ..
-    # emmake make twgsl -j${core_count} VERBOSE=1 
-    # cd ..
+    rm -rf ${BUILD_OUT}
+    mkdir -p ${BUILD_OUT}
+    cd ${BUILD_OUT}
+    emcmake cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ..
+    emmake make twgsl -j${core_count} VERBOSE=1 
+    cd ..
 
     echo -e "\033[01;32m ------------- COLLECTING ALL .a FILES (${BUILD_TYPE}) -----------------  \033[0m"
     
