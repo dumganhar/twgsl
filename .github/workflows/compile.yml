@@ -84,6 +84,7 @@ jobs:
           git diff
 
       - name: Compile
+        shell: bash
         run: |
           export EMSCRIPTEN=${EMSDK}/upstream/emscripten
           ./build-emscripten.sh
