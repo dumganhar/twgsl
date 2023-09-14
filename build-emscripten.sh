@@ -65,7 +65,7 @@ function build() {
     pushd ./artifact/${BUILD_TYPE}/tmp
 
     tmp_dir=$(pwd)
-    find ${tmp_dir} -type f -name "*.a" -exec sh -c '
+    find ${tmp_dir} -type f -name "*.a" -exec bash -c '
         root_dir=$1
         shift
         for source do
@@ -75,7 +75,7 @@ function build() {
             emar -x $source
             popd
         done
-    ' sh "${current_dir}" {} +
+    ' bash "${current_dir}" {} +
 
     find ${tmp_dir}  -type f -name "*.o" -exec emar -rcs libtwgsl-fat.${BUILD_TYPE}.a {} +
 
