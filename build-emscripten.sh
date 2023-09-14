@@ -33,20 +33,30 @@ function build() {
         CMAKE_BUILD_TYPE="Debug"
     fi
 
-    rm -rf ${BUILD_OUT}
-    mkdir -p ${BUILD_OUT}
-    cd ${BUILD_OUT}
-    emcmake cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ..
-    emmake make twgsl -j${core_count} #VERBOSE=1 
-    cd ..
+    # rm -rf ${BUILD_OUT}
+    # mkdir -p ${BUILD_OUT}
+    # cd ${BUILD_OUT}
+    # emcmake cmake -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} ..
+    # emmake make twgsl -j${core_count} VERBOSE=1 
+    # cd ..
 
     echo -e "\033[01;32m ------------- COLLECTING ALL .a FILES (${BUILD_TYPE}) -----------------  \033[0m"
     
     mkdir -p artifact/${BUILD_TYPE}/tmp
 
-    find ./${BUILD_OUT} -type f -name "*.a" -print0 | xargs -0 -I {} cp {} ./artifact/${BUILD_TYPE}/tmp
-    cp ./Core/twgsl/*.js ./artifact/${BUILD_TYPE}/
-    cp ./Core/twgsl/Source/*.js ./artifact/${BUILD_TYPE}/
+    # find ./${BUILD_OUT} -type f -name "*.a" -print0 | xargs -0 -I {} cp {} ./artifact/${BUILD_TYPE}/tmp
+
+    find "${BUILD_OUT}" -type f -name "*.a" -exec sh -c '
+        for source do
+          target="./artifact/'${BUILD_TYPE}'/tmp/${source#${BUILD_OUT}}"
+          mkdir -p "$(dirname "$target")"
+          echo "Copying $source to $target ..."
+          cp "$source" "$target"
+        done
+    ' sh {} +
+
+    # cp ./Core/twgsl/*.js ./artifact/${BUILD_TYPE}/
+    # cp ./Core/twgsl/Source/*.js ./artifact/${BUILD_TYPE}/
 
     ls -l ./artifact/${BUILD_TYPE}/tmp
 
@@ -54,9 +64,21 @@ function build() {
 
     pushd ./artifact/${BUILD_TYPE}/tmp
 
-    find . -type f -name "*.a" -print0 | xargs -0 -I {} emar -x {}
+    tmp_dir=$(pwd)
+    find ${tmp_dir} -type f -name "*.a" -exec sh -c '
+        root_dir=$1
+        shift
+        for source do
+            target="$(dirname "$source")"
+            pushd $target
+            emar -t $source | xargs node "${root_dir}/extract-library.js" $source
+            emar -x $source
+            popd
+        done
+    ' sh "${current_dir}" {} +
 
-    emar -rcs libtwgsl-fat.${BUILD_TYPE}.a *.o
+    find ${tmp_dir}  -type f -name "*.o" -exec emar -rcs libtwgsl-fat.${BUILD_TYPE}.a {} +
+
     cp libtwgsl-fat.${BUILD_TYPE}.a ..
     cd ..
     rm -rf ./tmp
